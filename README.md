@@ -22,7 +22,7 @@ Clone the repo to your local machine. Install Node.js if you do not already have
 After installing the dependencies, execute the program by typing 'node app.js' in your terminal.
 
 # Walkthrough
-![Screencap of program in use](https://drive.google.com/file/d/1EBrWEN5lR4_UNccoFmZr1i7sObhUF8eG/view)
+[Screencap of program in use](https://drive.google.com/file/d/1EBrWEN5lR4_UNccoFmZr1i7sObhUF8eG/view)
 
 # License
 GNU General Public License v3.0
