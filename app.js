@@ -4,7 +4,6 @@ const path = require("path");
 const fs = require("fs");
 
 // local file dependencies
-const Employee = require("./lib/Employee")
 const Manager = require("./lib/Manager");
 const Engineer = require("./lib/Engineer");
 const Intern = require("./lib/Intern");
@@ -17,6 +16,45 @@ const outputPath = path.join(OUTPUT_DIR, "team.html");
 // Array to hold team information
 const team = [];
 
+// Role specific questions
+const roleQuestions = {
+    Manager: [
+        {
+            type: 'input',
+            name: 'rolequestion',
+            message: "Input manager's office number.",
+        }
+    ],
+    Engineer: [
+        {
+            type: 'input',
+            name: 'rolequestion',
+            message: "Input engineer's GitHub username.",
+        }
+    ],
+    Intern: [
+        {
+            type: 'input',
+            name: 'rolequestion',
+            message: "Input the name of the intern's school.",
+            
+        }
+    ]
+}
+
+// Class with templates for specialized employee roles
+class EmployeeBuilder {
+    Engineer(name, id, email, github) {
+        return new Engineer(name, id, email, github);
+    }
+    Manager(name, id, email, officeNumber) {
+        return new Manager(name, id, email, officeNumber);
+    }
+    Intern(name, id, email, school) {
+        return new Intern(name, id, email, school);
+    }
+}
+
 // collect team member data
 function teamData() {
     inquirer.prompt(
@@ -24,26 +62,26 @@ function teamData() {
             {
                 type: 'input',
                 name: 'name',
-                message: 'Input employee name',
-                // validate: inputName => {
-                //     if(inputName && inputName.length > 1) {
-                //         return true;
-                //     }
-                //     else {
-                //         console.log('Enter an enployee name.')
-                //         return false;
-                //     }
-                // }
+                message: 'Input employee name', //expect string length of 2 characters or more
+                validate: inputName => {
+                    if(inputName && inputName.length > 1) {
+                        return true;
+                    }
+                    else {
+                        console.log('Enter an enployee name.')
+                        return false;
+                    }
+                }
             },
 
             {
                 type: 'input',
                 name: 'id',
-                message: 'Input employee id number',
+                message: 'Input employee id number', //expect integer
                 validate: inputId => {
                     checkId = parseInt(inputId);
                     if (isNaN(checkId)) {
-                        // Pass the return value in the done callback
+                        
                         console.log('You need to provide a number');
                         return false;
                       }
@@ -56,76 +94,34 @@ function teamData() {
             {
                 type: 'input',
                 name: 'email',
-                message: 'Input employee email address',
-                // validate: inputEmail => {
-                //     if(inputEmail && inputEmail.includes('@')) {
-                //         return true;
-                //     }
-                //     else {
-                //         console.log('Enter a valid email address.')
-                //         return false;
-                //     }
-                // }
+                message: 'Input employee email address', //expect string including '@' and '.' symbol
+                validate: inputEmail => {
+                    if(inputEmail && inputEmail.includes('@') && inputEmail.includes('.')) {
+                        return true;
+                    }
+                    else {
+                        console.log('Enter a valid email address.')
+                        return false;
+                    }
+                }
             },
 
             {
                 type: 'list',
                 name: 'role',
                 message: 'Use arrow keys to choose type of employee to add.',
-                choices: ['Manager', 'Engineer', 'Intern']
+                choices: ['Manager', 'Engineer', 'Intern'] 
             }
         ]
     ).then(answers => {
         // Add different questions based on chosen role
-        if(answers.role === 'Manager') {
-            inquirer.prompt(
-                [
-                    {
-                        type: 'input',
-                        name: 'officeNumber',
-                        message: "Input manager's office number.",
-                    }
-                ]
-            ).then(res => {
-                console.log(answers)
-                console.log(res)
-                const manager = new Manager(answers.name, answers.id, answers.email, res.officeNumber);
-                // console.log(manager);
-                team.push(manager);
+        inquirer.prompt(roleQuestions[answers.role]) //calls object roleQuestions and prompts the value that corresponds to the input role from the initial prompt
+            .then(res => {
+                const employeeBuilder = new EmployeeBuilder(); //instantiate EmployeeBuilder class
+                const employee = employeeBuilder[answers.role](answers.name, answers.id, answers.email, res.rolequestion); //pass relevant parameters to EnployeeBuilder based on input role form initial prompt
+                team.push(employee);
                 addNewEmployee();
             })
-        }
-        else if (answers.role === 'Engineer') {
-            inquirer.prompt(
-                [
-                    {
-                        type: 'input',
-                        name: 'github',
-                        message: "Input engineer's GitHub username.",
-                    }
-                ]
-            ).then(res => {
-                const engineer = new Engineer(answers.name, answers.id, answers.email, res.github);
-                team.push(engineer);
-                addNewEmployee(); 
-            })
-        }
-        else {
-            inquirer.prompt(
-                [
-                    {
-                        type: 'input',
-                        name: 'school',
-                        message: "Input the name of the intern's school.",
-                        
-                    }
-                ]
-            ).then(res => {
-                const intern = new Intern(answers.name, answers.id, answers.email, res.school);
-                team.push(intern);
-                addNewEmployee();
-            })
-        }
     })
 }
 
